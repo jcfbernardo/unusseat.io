@@ -5,3 +5,4 @@ HELP.md
 .docker
 target/
 CLAUDE.md
+docs/
