@@ -4,6 +4,7 @@ import com.unusseat.unusseat.domain.Ticket;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
@@ -19,5 +20,17 @@ public interface TicketRepository extends ReactiveCrudRepository<Ticket, UUID> {
         )
     """)
   Flux<Ticket> findAvailableTicketsByEventId(UUID eventId);
+
+  @Query("""
+        SELECT t.* FROM tickets t
+        WHERE t.event_id = :eventId
+        AND t.status = 'AVAILABLE'
+        AND t.id NOT IN (
+            SELECT ticket_id FROM reservations
+            WHERE status IN ('PENDING', 'CONFIRMED')
+        )
+        LIMIT 1
+    """)
+  Mono<Ticket> findFirstAvailableByEventId(UUID eventId);
 
 }
